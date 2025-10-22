@@ -31,6 +31,9 @@ spec:
         heritage: {{ .Release.Service }}
         release: {{ .Release.Name }}
     spec:
+      {{- if .Values.fleet.podSecurityContext.enabled }}
+      securityContext: {{- omit .Values.fleet.podSecurityContext "enabled" | toYaml | nindent 8 }}
+      {{- end }}
       containers:
       - name: fleet
         command: [/usr/bin/fleet]
@@ -401,21 +404,9 @@ spec:
                 key: {{ .valueFrom.secretKeyRef.key }}
           {{- end }}
           {{- end }}
-        securityContext:
-          allowPrivilegeEscalation: false
-          capabilities:
-            drop: [ALL]
-          privileged: false
-          readOnlyRootFilesystem: true
-          {{- if .Values.fleet.securityContext.runAsGroup }}
-          runAsGroup: {{ int64 .Values.fleet.securityContext.runAsGroup }}
-          {{- end }}
-          {{- if .Values.fleet.securityContext.runAsUser }}
-          runAsUser: {{ int64 .Values.fleet.securityContext.runAsUser }}
-          {{- end }}
-          {{- if .Values.fleet.securityContext.runAsNonRoot }}
-          runAsNonRoot: {{ .Values.fleet.securityContext.runAsNonRoot }}
-          {{- end }}
+        {{- if .Values.fleet.containerSecurityContext.enabled }}
+        securityContext: {{- omit .Values.fleet.containerSecurityContext "enabled" | toYaml | nindent 10 }}
+        {{- end }}
         livenessProbe:
           httpGet:
             path: /healthz
@@ -466,21 +457,9 @@ spec:
           requests:
             cpu: 0.1 # 100Mhz
             memory: 50Mi
-        securityContext:
-          allowPrivilegeEscalation: false
-          capabilities:
-            drop: [ALL]
-          privileged: false
-          readOnlyRootFilesystem: true
-          {{- if .Values.fleet.securityContext.runAsGroup }}
-          runAsGroup: {{ int64 .Values.fleet.securityContext.runAsGroup }}
-          {{- end }}
-          {{- if .Values.fleet.securityContext.runAsUser }}
-          runAsUser: {{ int64 .Values.fleet.securityContext.runAsUser }}
-          {{- end }}
-          {{- if .Values.fleet.securityContext.runAsNonRoot }}
-          runAsNonRoot: {{ .Values.fleet.securityContext.runAsNonRoot }}
-          {{- end }}
+        {{- if .Values.gke.cloudSQL.containerSecurityContext.enabled }}
+        securityContext: {{- omit .Values.fleet.containerSecurityContext "enabled" | toYaml | nindent 12 }}
+        {{- end }}
       {{- end }}
       hostPID: false
       hostNetwork: false

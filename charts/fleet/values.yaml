@@ -122,11 +122,33 @@ fleet:
     licenseKey: license-key
   extraVolumes: []
   extraVolumeMounts: []
-  # Currently only passes runAsNonRoot, runAsUser, runAsGroup
-  securityContext:
-    runAsNonRoot: true
+  # Configure Pods Security Context
+  # ref: https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-pod
+  podSecurityContext:
+    enabled: true
+    fsGroupChangePolicy: Always
+    sysctls: []
+    supplementalGroups: []
+    fsGroup: 3333
     runAsUser: 3333
     runAsGroup: 3333
+
+  # Configure Container Security Context
+  # https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-container
+  containerSecurityContext:
+    enabled: true
+    seLinuxOptions: {}
+    runAsUser: 3333
+    runAsGroup: 3333
+    runAsNonRoot: true
+    readOnlyRootFilesystem: true
+    privileged: false
+    allowPrivilegeEscalation: false
+    capabilities:
+      drop: ["ALL"]
+    seccompProfile:
+      type: "RuntimeDefault"
+
 # Whether to make fleet vulnerability processing run in a dedicated container
 # if you set dedicated=false, you need to increase the main resources section
 # to 4Gi or the fleet container will be OOMKilled when vulnerability processing
@@ -265,6 +287,23 @@ gke:
     imageTag: 1.17-alpine
     verbose: true
     instanceName: ""
+
+    # Configure Container Security Context
+    # https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-container
+    containerSecurityContext:
+      enabled: true
+      seLinuxOptions: {}
+      runAsUser: 3333
+      runAsGroup: 3333
+      runAsNonRoot: true
+      readOnlyRootFilesystem: true
+      privileged: false
+      allowPrivilegeEscalation: false
+      capabilities:
+        drop: ["ALL"]
+      seccompProfile:
+        type: "RuntimeDefault"
+
   # The GKE Ingress requires a few changes that other ingress controllers don't
   ingress:
     useManagedCertificate: false

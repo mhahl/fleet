@@ -120,26 +120,9 @@ spec:
             value: "{{ .Values.database.tls.serverName }}"
           {{- end }}
           ## END MYSQL SECTION
-        securityContext:
-          allowPrivilegeEscalation: false
-          capabilities:
-            {{- if .Values.gke.cloudSQL.enableProxy }}
-            add:
-              - SYS_PTRACE
-            {{- else }}
-            drop: [ALL]
-            {{- end }}
-          privileged: false
-          readOnlyRootFilesystem: true
-          {{- if .Values.fleet.securityContext.runAsGroup }}
-          runAsGroup: {{ int64 .Values.fleet.securityContext.runAsGroup }}
-          {{- end }}
-          {{- if .Values.fleet.securityContext.runAsUser }}
-          runAsUser: {{ int64 .Values.fleet.securityContext.runAsUser }}
-          {{- end }}
-          {{- if .Values.fleet.securityContext.runAsNonRoot }}
-          runAsNonRoot: {{ .Values.fleet.securityContext.runAsNonRoot }}
-          {{- end }}
+        {{- if .Values.fleet.containerSecurityContext.enabled }}
+        securityContext: {{- omit .Values.fleet.containerSecurityContext "enabled" | toYaml | nindent 10 }}
+        {{- end }}
         volumeMounts:
           {{- if .Values.database.tls.enabled }}
           - name: mysql-tls
